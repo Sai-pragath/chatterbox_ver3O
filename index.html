@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chatterbox – Enhanced Edition</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 0.6s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.4; }
+}
+
+.login {
+  background: white;
+  padding: 40px;
+  width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  animation: slideInBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.login h2 {
+  margin: 0 0 8px 0;
+  color: #00a884;
+  font-size: 32px;
+  font-weight: 700;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.login p {
+  margin: 0 0 25px 0;
+  color: #667781;
+  font-size: 14px;
+}
+
+.login input,
+.login select,
+.login button {
+  width: 100%;
+  padding: 14px 16px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 2px solid #d1d7db;
+  font-size: 15px;
+  background: white;
+  color: #111b21;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login input:focus,
+.login select:focus {
+  outline: none;
+  border-color: #00a884;
+  transform: scale(1.02);
+  box-shadow: 0 0 0 4px rgba(0, 168, 132, 0.1);
+}
+
+.login button {
+  background: linear-gradient(135deg, #00a884 0%, #06cf9c 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.login button::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.login button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.login button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 168, 132, 0.3);
+}
+
+.captcha-container {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f0f2f5;
+  border-radius: 10px;
+}
+
+.captcha-display {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: #111b21;
+  text-align: center;
+  margin-bottom: 10px;
+  user-select: none;
+  font-family: 'Courier New', monospace;
+}
+
+.captcha-refresh {
+  background: white;
+  border: 2px solid #00a884;
+  color: #00a884;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.captcha-refresh:hover {
+  background: #00a884;
+  color: white;
+  transform: rotate(180deg);
+}
+
+.chat-container {
+  width: 500px;
+  height: 720px;
+  background: white;
+  border-radius: 16px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  animation: chatSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes chatSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.header {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #008069 0%, #00a884 100%);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: #008069;
+  animation: avatarPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes avatarPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.header-info h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.header-info p {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+}
+
+.header select {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  margin-right: 8px;
+  transition: all 0.3s ease;
+}
+
+.header select:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.header select option {
+  background: white;
+  color: #111b21;
+}
+
+.home-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.home-button:hover {
+  background: rgba(255,255,255,0.4);
+  transform: scale(1.1);
+}
+
+#chat {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #efeae2;
+}
+
+#chat::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chat::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+
+.message {
+  margin-bottom: 6px;
+  max-width: 70%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  animation: messageSlideIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: left center;
+}
+
+@keyframes messageSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.message.me {
+  animation: messageSlideSent 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: right center;
+}
+
+@keyframes messageSlideSent {
+  0% {
+    opacity: 0;
+    transform: translateX(20px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.message-header {
+  font-size: 12px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.message-content {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.message-text {
+  flex: 1;
+  color: #111b21;
+}
+
+.message-time {
+  font-size: 11px;
+  color: rgba(0,0,0,0.45);
+  white-space: nowrap;
+}
+
+.me {
+  background: linear-gradient(135deg, #d9fdd3 0%, #c8f5c3 100%);
+  margin-left: auto;
+  border-radius: 10px 0 10px 10px;
+}
+
+.other {
+  background: white;
+  border-radius: 0 10px 10px 10px;
+}
+
+.voice-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 8px;
+  margin-top: 6px;
+}
+
+.voice-play-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: #00a884;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.voice-play-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 168, 132, 0.4);
+}
+
+.voice-waveform {
+  flex: 1;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.voice-bar {
+  width: 3px;
+  background: #00a884;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.voice-duration {
+  font-size: 12px;
+  color: #667781;
+}
+
+.system {
+  text-align: center;
+  color: #667781;
+  font-size: 12px;
+  padding: 8px 14px;
+  margin: 16px auto;
+  max-width: 80%;
+  background: rgba(255,255,255,0.9);
+  border-radius: 10px;
+  animation: systemFade 0.4s ease-in-out;
+}
+
+@keyframes systemFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+#typing {
+  padding: 10px 20px;
+  font-size: 13px;
+  color: #667781;
+  font-style: italic;
+  min-height: 35px;
+  background: #efeae2;
+}
+
+.typing-dots {
+  display: inline-block;
+  animation: typingDots 1.4s infinite;
+}
+
+@keyframes typingDots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.input-box {
+  display: flex;
+  padding: 12px;
+  gap: 8px;
+  background: #f0f2f5;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 24px;
+  border: none;
+  font-size: 15px;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.input-box input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.2);
+}
+
+.input-box button {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #00a884 0%, #06cf9c 100%);
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.input-box button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 168, 132, 0.4);
+}
+
+.input-box button:active {
+  transform: scale(0.95);
+}
+
+.voice-record-btn {
+  background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+}
+
+.voice-record-btn.recording {
+  animation: recordPulse 1s ease-in-out infinite;
+}
+
+@keyframes recordPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(255, 71, 87, 0);
+  }
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  z-index: 1000;
+  border-left: 4px solid #00a884;
+  animation: notificationSlide 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes notificationSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="login" id="login">
+  <h2>💬 Chatterbox</h2>
+  <p>Connect and chat with others</p>
+  <input id="username" placeholder="Enter your username" maxlength="20">
+  <select id="loginRoom">
+    <option value="general">🌍 General</option>
+    <option value="tech">💻 Tech</option>
+    <option value="gaming">🎮 Gaming</option>
+    <option value="music">🎵 Music</option>
+    <option value="sports">⚽ Sports</option>
+    <option value="movies">🎬 Movies</option>
+  </select>
+  
+  <div class="captcha-container">
+    <div class="captcha-display" id="captchaDisplay"></div>
+    <input id="captchaInput" placeholder="Enter the code above" maxlength="6">
+    <button class="captcha-refresh" onclick="generateCaptcha()">🔄 Refresh</button>
+  </div>
+  
+  <button onclick="startChat()">Join Chat</button>
+</div>
+
+<div class="chat-container" id="chatUI">
+  <div class="header">
+    <div class="header-left">
+      <div class="user-avatar" id="userAvatar"></div>
+      <div class="header-info">
+        <h3 id="roomTitle">Room</h3>
+        <p id="userNameDisplay"></p>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <select id="roomSelect">
+        <option value="general">🌍 General</option>
+        <option value="tech">💻 Tech</option>
+        <option value="gaming">🎮 Gaming</option>
+        <option value="music">🎵 Music</option>
+        <option value="sports">⚽ Sports</option>
+        <option value="movies">🎬 Movies</option>
+      </select>
+      <button class="home-button" onclick="goHome()">🏠</button>
+    </div>
+  </div>
+
+  <div id="chat"></div>
+  <div id="typing"></div>
+
+  <div class="input-box">
+    <button class="voice-record-btn" id="voiceBtn" onclick="toggleVoiceRecord()">🎤</button>
+    <input id="msg" placeholder="Type a message" maxlength="500">
+    <button onclick="send()">➤</button>
+  </div>
+</div>
+
+<script>
+
+let ws;
+let username;
+let currentRoom;
+let captchaCode = "";
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
+let recordingStartTime = 0;
+
+const chat = document.getElementById("chat");
+const msgInput = document.getElementById("msg");
+const voiceBtn = document.getElementById("voiceBtn");
+
+// Audio Context for generating notification sounds
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+// Function to play send notification sound
+function playSendSound() {
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  
+  oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+  
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+  
+  oscillator.start(audioCtx.currentTime);
+  oscillator.stop(audioCtx.currentTime + 0.15);
+}
+
+// Function to play receive notification sound
+function playReceiveSound() {
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  
+  oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+  
+  gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+  
+  oscillator.start(audioCtx.currentTime);
+  oscillator.stop(audioCtx.currentTime + 0.2);
+}
+
+const backgrounds = {
+  login: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=80",
+  general: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=80",
+  tech: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=1800&q=80",
+  gaming: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80",
+  music: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1600&q=80",
+  sports: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=80",
+  movies: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1600&q=80"
+};
+document.body.style.backgroundImage = `url(${backgrounds.login})`;
+
+function generateCaptcha() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  captchaCode = '';
+  for (let i = 0; i < 6; i++) {
+    captchaCode += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  document.getElementById('captchaDisplay').textContent = captchaCode;
+}
+
+generateCaptcha();
+
+function showNotification(message) {
+  const notif = document.createElement("div");
+  notif.className = "notification";
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  setTimeout(() => {
+    notif.style.animation = "notificationSlide 0.3s reverse";
+    setTimeout(() => notif.remove(), 300);
+  }, 2700);
+}
+
+function goHome() {
+  if (ws) ws.close();
+  if (mediaRecorder && isRecording) {
+    mediaRecorder.stop();
+    isRecording = false;
+  }
+  
+  document.getElementById("chat").innerHTML = "";
+  document.getElementById("login").style.display = "block";
+  document.getElementById("chatUI").style.display = "none";
+  document.body.style.backgroundImage = `url(${backgrounds.login})`;
+  showNotification("👋 Logged out successfully");
+}
+
+function startChat() {
+  username = document.getElementById("username").value.trim();
+  currentRoom = document.getElementById("loginRoom").value;
+  const captchaInput = document.getElementById("captchaInput").value.trim().toUpperCase();
+
+  if (!username) {
+    showNotification("⚠️ Please enter a username");
+    return;
+  }
+
+  if (captchaInput !== captchaCode) {
+    showNotification("❌ Invalid captcha code");
+    generateCaptcha();
+    return;
+  }
+
+  connectWebSocket();
+}
+
+function connectWebSocket() {
+  ws = new WebSocket("wss://chatterboxver3o-production.up.railway.app/ws");
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({
+      username: username,
+      room: currentRoom
+    }));
+
+    document.getElementById("login").style.display = "none";
+    document.getElementById("chatUI").style.display = "flex";
+    document.getElementById("userAvatar").textContent = username[0].toUpperCase();
+    document.getElementById("userNameDisplay").textContent = username;
+    applyRoomUI();
+    showNotification(`✅ Connected to ${currentRoom}`);
+  };
+
+  ws.onerror = () => {
+    showNotification("❌ Unable to connect to server");
+  };
+
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+
+    if (data.type === "chat") {
+      addMessage(data.username, data.message, data.time, data.voiceData, data.duration);
+      
+      // Play receive sound if message is from another user
+      if (data.username !== username) {
+        playReceiveSound();
+      }
+    }
+    else if (data.type === "system") {
+      addSystemMessage(data.message);
+    }
+    else if (data.type === "typing") {
+      if (data.username !== username) {
+        document.getElementById("typing").innerHTML = `${data.username} is typing<span class="typing-dots">...</span>`;
+      }
+    }
+    else if (data.type === "stop_typing") {
+      document.getElementById("typing").textContent = "";
+    }
+  };
+
+  ws.onclose = () => {
+    showNotification("⚠️ Connection lost");
+  };
+}
+
+function applyRoomUI() {
+  document.body.style.backgroundImage = `url(${backgrounds[currentRoom]})`;
+  const roomNames = {
+    general: "🌍 General",
+    tech: "💻 Tech",
+    gaming: "🎮 Gaming",
+    music: "🎵 Music",
+    sports: "⚽ Sports",
+    movies: "🎬 Movies"
+  };
+  document.getElementById("roomTitle").textContent = roomNames[currentRoom];
+  document.getElementById("roomSelect").value = currentRoom;
+}
+
+function addMessage(user, msg, time, voiceData, duration) {
+  const div = document.createElement("div");
+  div.className = "message " + (user === username ? "me" : "other");
+  
+  if (user !== username) {
+    const header = document.createElement("div");
+    header.className = "message-header";
+    header.textContent = user;
+    div.appendChild(header);
+  }
+  
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "message-content";
+  
+  const mainContent = document.createElement("div");
+  mainContent.style.flex = "1";
+  
+  if (voiceData) {
+    const text = document.createElement("div");
+    text.className = "message-text";
+    text.textContent = "🎤 Voice message";
+    mainContent.appendChild(text);
+    
+    const voiceDiv = document.createElement("div");
+    voiceDiv.className = "voice-message";
+    
+    const playBtn = document.createElement("button");
+    playBtn.className = "voice-play-btn";
+    playBtn.innerHTML = "▶";
+    playBtn.onclick = () => playVoiceMessage(voiceData, playBtn);
+    
+    const waveform = document.createElement("div");
+    waveform.className = "voice-waveform";
+    for (let i = 0; i < 20; i++) {
+      const bar = document.createElement("div");
+      bar.className = "voice-bar";
+      bar.style.height = `${Math.random() * 20 + 8}px`;
+      waveform.appendChild(bar);
+    }
+    
+    const durationSpan = document.createElement("span");
+    durationSpan.className = "voice-duration";
+    durationSpan.textContent = duration || "0:00";
+    
+    voiceDiv.appendChild(playBtn);
+    voiceDiv.appendChild(waveform);
+    voiceDiv.appendChild(durationSpan);
+    mainContent.appendChild(voiceDiv);
+  } else {
+    const text = document.createElement("div");
+    text.className = "message-text";
+    text.textContent = msg;
+    mainContent.appendChild(text);
+  }
+  
+  contentDiv.appendChild(mainContent);
+  
+  const timeDiv = document.createElement("div");
+  timeDiv.className = "message-time";
+  timeDiv.textContent = time;
+  contentDiv.appendChild(timeDiv);
+  
+  div.appendChild(contentDiv);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function playVoiceMessage(base64Data, button) {
+  try {
+    const audio = new Audio(base64Data);
+    button.innerHTML = "⏸";
+    button.disabled = true;
+    
+    audio.play();
+    
+    audio.onended = () => {
+      button.innerHTML = "▶";
+      button.disabled = false;
+    };
+    
+    audio.onerror = () => {
+      button.innerHTML = "▶";
+      button.disabled = false;
+      showNotification("❌ Error playing voice message");
+    };
+  } catch (error) {
+    showNotification("❌ Cannot play voice message");
+  }
+}
+
+function addSystemMessage(msg) {
+  const div = document.createElement("div");
+  div.className = "system";
+  div.textContent = msg;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function toggleVoiceRecord() {
+  if (!isRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      recordingStartTime = Date.now();
+      
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        const durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        
+        reader.onloadend = () => {
+          const base64Audio = reader.result;
+          
+          ws.send(JSON.stringify({
+            type: "chat",
+            message: "🎤 Voice message",
+            voiceData: base64Audio,
+            duration: durationStr
+          }));
+          
+          playSendSound();
+        };
+        
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      mediaRecorder.start();
+      isRecording = true;
+      voiceBtn.classList.add("recording");
+      voiceBtn.innerHTML = "⏹";
+      showNotification("🎤 Recording...");
+      
+    } catch (error) {
+      showNotification("❌ Microphone access denied");
+    }
+  } else {
+    mediaRecorder.stop();
+    isRecording = false;
+    voiceBtn.classList.remove("recording");
+    voiceBtn.innerHTML = "🎤";
+  }
+}
+
+let typingTimeout;
+let isTyping = false;
+
+function send() {
+  if (!msgInput.value.trim()) return;
+
+  // Stop typing indicator
+  if (isTyping) {
+    ws.send(JSON.stringify({ type: "stop_typing" }));
+    isTyping = false;
+  }
+
+  ws.send(JSON.stringify({
+    type: "chat",
+    message: msgInput.value
+  }));
+
+  playSendSound();
+  msgInput.value = "";
+}
+
+msgInput.addEventListener("input", () => {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  
+  // Send typing indicator
+  if (!isTyping) {
+    ws.send(JSON.stringify({ type: "typing" }));
+    isTyping = true;
+  }
+  
+  // Clear previous timeout
+  clearTimeout(typingTimeout);
+  
+  // Set new timeout to stop typing indicator
+  typingTimeout = setTimeout(() => {
+    if (isTyping) {
+      ws.send(JSON.stringify({ type: "stop_typing" }));
+      isTyping = false;
+    }
+  }, 2000);
+});
+
+msgInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") send();
+});
+
+document.getElementById("roomSelect").addEventListener("change", () => {
+  const newRoom = document.getElementById("roomSelect").value;
+  
+  ws.send(JSON.stringify({
+    type: "switch_room",
+    room: newRoom
+  }));
+  
+  currentRoom = newRoom;
+  document.getElementById("chat").innerHTML = "";
+  applyRoomUI();
+  showNotification(`Switched to ${newRoom}`);
+});
+
+</script>
+
+</body>
+</html>
