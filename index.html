@@ -766,7 +766,7 @@ function connectWebSocket() {
     const data = JSON.parse(e.data);
 
     if (data.type === "chat") {
-      addMessage(data.username, data.message, data.time, data.voiceData, data.duration);
+      addMessage(data.username, data.message, null, data.voiceData, data.duration);
       
       // Play receive sound if message is from another user
       if (data.username !== username) {
@@ -804,54 +804,70 @@ function applyRoomUI() {
   document.getElementById("roomTitle").textContent = roomNames[currentRoom];
   document.getElementById("roomSelect").value = currentRoom;
 }
+function getRelativeTime(timestamp) {
+  const diff = Math.floor((Date.now() - timestamp) / 1000);
+
+  if (diff < 10) return "Just now";
+  if (diff < 60) return `${diff} sec ago`;
+
+  const minutes = Math.floor(diff / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const hours = Math.floor(minutes / 60);
+  return `${hours} hr ago`;
+}
 
 function addMessage(user, msg, time, voiceData, duration) {
+  const timestamp = Date.now();
+
   const div = document.createElement("div");
   div.className = "message " + (user === username ? "me" : "other");
-  
+
   if (user !== username) {
     const header = document.createElement("div");
     header.className = "message-header";
     header.textContent = user;
     div.appendChild(header);
   }
-  
+
   const contentDiv = document.createElement("div");
   contentDiv.className = "message-content";
-  
+
   const mainContent = document.createElement("div");
   mainContent.style.flex = "1";
-  
+
   if (voiceData) {
     const text = document.createElement("div");
     text.className = "message-text";
     text.textContent = "🎤 Voice message";
     mainContent.appendChild(text);
-    
+
     const voiceDiv = document.createElement("div");
     voiceDiv.className = "voice-message";
-    
+
     const playBtn = document.createElement("button");
     playBtn.className = "voice-play-btn";
     playBtn.innerHTML = "▶";
     playBtn.onclick = () => playVoiceMessage(voiceData, playBtn);
-    
+
     const waveform = document.createElement("div");
     waveform.className = "voice-waveform";
+
     for (let i = 0; i < 20; i++) {
       const bar = document.createElement("div");
       bar.className = "voice-bar";
       bar.style.height = `${Math.random() * 20 + 8}px`;
       waveform.appendChild(bar);
     }
-    
+
     const durationSpan = document.createElement("span");
     durationSpan.className = "voice-duration";
     durationSpan.textContent = duration || "0:00";
-    
+
     voiceDiv.appendChild(playBtn);
     voiceDiv.appendChild(waveform);
     voiceDiv.appendChild(durationSpan);
+
     mainContent.appendChild(voiceDiv);
   } else {
     const text = document.createElement("div");
@@ -859,18 +875,24 @@ function addMessage(user, msg, time, voiceData, duration) {
     text.textContent = msg;
     mainContent.appendChild(text);
   }
-  
+
   contentDiv.appendChild(mainContent);
-  
+
   const timeDiv = document.createElement("div");
   timeDiv.className = "message-time";
-  timeDiv.textContent = time;
+  timeDiv.textContent = getRelativeTime(timestamp);
+
+  setInterval(() => {
+    timeDiv.textContent = getRelativeTime(timestamp);
+  }, 60000);
+
   contentDiv.appendChild(timeDiv);
-  
+
   div.appendChild(contentDiv);
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
+
 
 function playVoiceMessage(base64Data, button) {
   try {
